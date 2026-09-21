@@ -54,7 +54,7 @@ def return_key(expired: bool):
             if key["expires_at"] > now:
                 valid_key = key["key_obj"].export_public(as_dict=True)
                 break
-    return valid_key
+    return json.dumps(valid_keyvalid_key)
 
 @app.get("/.well-known/jwks.json")
 def return_json():
@@ -63,7 +63,7 @@ def return_json():
     for key in KEYS.values():
         if key["expires_at"] > now:
             valid_keys.append(key["key_obj"].export_public(as_dict=True))
-    return {"keys": valid_keys}
+    return {json.dumps(valid_keys)}
 
 
 
