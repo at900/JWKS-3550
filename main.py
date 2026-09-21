@@ -10,7 +10,7 @@ KEYS = {}
 
 app = FastAPI()
 
-def generate_key():
+def generate_key(expired):
 
     kid = str(uuid.uuid4())
     
@@ -21,9 +21,11 @@ def generate_key():
         use='sig', 
         kid=kid
     )
-
-    expires_in = 1 * 60 * 60 # expires in 1 hour
-    expiration_timestamp = int(time.time()) + expires_in
+    if expired:
+        expiration_timestamp = int(time.time()) - 10000 # expired 10000 seconds ago
+    else:
+        expires_in = 1 * 60 * 60 # expires in 1 hour
+        expiration_timestamp = int(time.time()) + expires_in
 
     KEYS[kid] = {
         "key_obj": key,
@@ -34,15 +36,25 @@ def generate_key():
 
 @app.on_event("startup")
 def startup():
-    generate_key()
-    generate_key()
-    generate_key()
-    # print(generate_key())
+    generate_key(True)
+    generate_key(True)
+    generate_key(True)
+    generate_key(False)
+    generate_key(False)
 
 @app.post("/auth")
-def retrn_key():
-    kid = generate_key()
-    return KEYS[kid].key_obj
+def return_key(expired: bool):
+    now = int(time.time())
+    for key in KEYS.values():
+        if expired:
+            if key["expires_at"] < now:
+                valid_key = key["key_obj"].export_public(as_dict=True)
+                break
+        else:
+            if key["expires_at"] > now:
+                valid_key = key["key_obj"].export_public(as_dict=True)
+                break
+    return valid_key
 
 @app.get("/.well-known/jwks.json")
 def return_json():
