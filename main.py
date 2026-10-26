@@ -10,6 +10,10 @@ import sqlite3
 # dict to store keys along with their expiration timestamp
 # KEYS = {}
 
+# python is awful why does anyone use this language.
+# I can't tell what type anything is without printing it out
+# and even then it's not clear. I hate this language.
+
 DB_FILE = "totally_not_my_privateKeys.db"
 
 def init_db():
